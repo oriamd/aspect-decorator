@@ -3,91 +3,101 @@ import { FunctionArguments, AspectOptions, AdviceMetadata } from "./AspectOption
 
 export default function Aspect(options?: AspectOptions) {
     options = {...defaultOptions, ...options};
-    function decorator(class_target) {
+    function decorator(target) {
         try {
-            Object.getOwnPropertyNames(class_target.prototype)
-                .filter((methodName)=>methodsFilter(options, methodName))
-                .forEach(methodName =>
-                    applyDecoratorToMethod(options, class_target.name, class_target.prototype, methodName),
-                );
-            Object.values(Object.getOwnPropertyDescriptors(class_target))
-                .filter(staticFunctionsSelector)
-                .filter((staticFunctionsSelector)=>methodsFilter(options, staticFunctionsSelector.value.name))
-                .forEach((staticFunction: PropertyDescriptor) =>
-                    applyDecoratorToMethod(options, class_target.name, class_target, staticFunction.value.name),
-                );
+            console.log(Object.getOwnPropertyNames(target));
+            const staticMethodsDescriptors = getMethodsDescriptors(target, options);
+            const methodsDescriptors = getMethodsDescriptors(target.prototype, options);
+            const className = target.name;
+            staticMethodsDescriptors.forEach(methodsDescriptor => applyDecoratorToMethod(target, className, methodsDescriptor.methodName, methodsDescriptor.propertyDescriptor, options));
+            methodsDescriptors.forEach(methodsDescriptor => applyDecoratorToMethod(target.prototype, className, methodsDescriptor.methodName, methodsDescriptor.propertyDescriptor, options));
+
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     }
     return !options?.disableAspect ? decorator : null;
 }
 
-function applyDecoratorToMethod(options: AspectOptions, class_name, class_target, methodName: string) {
-    let methodDescriptor: PropertyDescriptor = Object.getOwnPropertyDescriptor(
-        class_target,
-        methodName,
-    );
-    if (!methodDescriptor && typeof methodDescriptor.value !== 'function') return;
+function applyDecoratorToMethod(target: any, className: string, methodName: string, methodDescriptor: PropertyDescriptor, options: AspectOptions) {
     const originalMethod = methodDescriptor.value;
     if (!originalMethod) return;
 
     const argNames = Utils.getParamNames(originalMethod);
+    const metadata: AdviceMetadata = {
+        className,
+        methodName
+    }
+    Object.defineProperty(target, methodName, 
+        {
+        ...methodDescriptor,
+        value: function(...argsValues) {
+            metadata.args = getFunctionArguments(argNames, argsValues);
+            options.onEntry?.(metadata);
 
-    class_target[methodName] = function(...argsValues) {
-        let className = class_name;
-        let args: FunctionArguments = getFunctionArguments(argNames, argsValues);
-        try {
-            options?.onEntry({className, methodName, args});
-            
-            let returnValue = originalMethod.apply(this, argsValues);
+            handelReturnedValue(this, options, originalMethod, argsValues, metadata);
 
-            if (returnValue && returnValue.then) {
-                handelPromiseReturnedValue(options, returnValue, {className, methodName, args, returnValue});
-            } else {
-                options?.onSuccess({className, methodName, args, returnValue});
-                options?.onExit({className, methodName, args, returnValue});
+            if (metadata.returnValue?.then) {
+                handelPromiseReturnedValue(options, metadata);
             }
-            return returnValue;
-        } catch (error) {
-            options?.onException({className, methodName, args, error});
-            options?.onExit({className, methodName, args, error});
-            throw error;
+
+            return metadata.returnValue;
         }
-    };
+    })
 }
 
-async function handelPromiseReturnedValue(options, returnedPromise, {className, methodName, args }:AdviceMetadata) {
+
+async function handelPromiseReturnedValue(options, metadata :AdviceMetadata) {
     try {
-        let returnValue = await returnedPromise;
-        options?.onEntry({className, methodName, args, returnValue});
-        options?.onExit({className, methodName, args, returnValue});
+        metadata.returnValue = await metadata.returnValue;
+        !metadata.returnValue?.then && options.onSuccess?.(metadata);
     } catch (error) {
-        options?.onException({className, methodName, args, error});
-        options?.onExit({className, methodName, args, error});
+        metadata.error = error;
+        options?.onException?.(metadata);
+    } finally {
+        !metadata.returnValue?.then && options?.onExit?.(metadata);
     }
 }
 
+function handelReturnedValue(scope, options: AspectOptions, originalMethod: Function, argsValues: any[], metadata :AdviceMetadata) {
+    try{
+        metadata.returnValue = originalMethod.apply(scope, argsValues);
+        options.onSuccess?.(metadata);
+    } catch (error) {
+        metadata.error = error
+        options.onException?.(metadata);
+        throw error;
+    } finally {
+        options.onExit?.(metadata);
+    }
+}
+
+
+
 const defaultOptions: AspectOptions = {
     disableAspect: false,
-    ignoredFunctions: [],
-    onEntry: ()=>{},
-    onSuccess: ()=>{},
-    onException: ()=>{},
-    onExit: ()=>{},
+    ignoredFunctions: []
 }
 
-function methodsFilter(options: AspectOptions, methodName: string) {
-    return !options?.ignoredFunctions?.includes(methodName);
+function getMethodsDescriptors(target: any, options: AspectOptions): {propertyDescriptor: PropertyDescriptor, methodName: string}[]{
+    return Object.getOwnPropertyNames(target)
+        .filter(methodName => {
+            return !options.ignoredFunctions.includes(methodName) && typeof target[methodName] === 'function'
+        })
+        .map(methodName => ({propertyDescriptor: Object.getOwnPropertyDescriptor(target, methodName), methodName}));
 }
 
-function staticFunctionsSelector(propertyDescriptor: PropertyDescriptor) {
-    return (
-        propertyDescriptor.writable &&
-        typeof propertyDescriptor.value === 'function' &&
-        propertyDescriptor.value
-    );
-}
+// function methodsFilter(options: AspectOptions, methodName: string) {
+//     return !options?.ignoredFunctions?.includes(methodName);
+// }
+
+// function staticFunctionsSelector(propertyDescriptor: PropertyDescriptor) {
+//     return (
+//         propertyDescriptor.writable &&
+//         typeof propertyDescriptor.value === 'function' &&
+//         propertyDescriptor.value
+//     );
+// }
 
 function getFunctionArguments(argsNames: string[], values: any[]): FunctionArguments {
     let args = {};
