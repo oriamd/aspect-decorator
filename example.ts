@@ -8,7 +8,7 @@ const options: AspectOptions = {
         console.log(`${className}/${methodName} params : `, JSON.stringify(args));
     },
 
-    onSuccess: ({className, methodName, returnValue}) => {
+    onSuccess: ({className, methodName, returnValue: returnValue}) => {
         console.log(`${className}/${methodName} end. result = ${returnValue}`);
     },
 
@@ -27,7 +27,7 @@ class TestLogWithDecorator {
         console.log('getter');
     }
 
-    addFunction(num1, num2) {
+    addFunction(num1: Number, num2) {
         return num1 + num2;
     }
 
@@ -44,8 +44,8 @@ class TestLogWithDecorator {
         throw 'ERROR asyncErrorFunction throw error';
     }
 
-    static staticFunction(num1, num2){
-        return num1 + num2;
+    static staticFunction(...nums){
+        return nums[0] + nums[1];
     }
 
     functionRunner(foo){
