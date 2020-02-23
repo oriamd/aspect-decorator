@@ -1,5 +1,5 @@
 import Utils from "../utils";
-import { FunctionArguments, AspectOptions, AdviceMetadata } from "./AspectOptions";
+import { AspectOptions, AdviceMetadata } from "./AspectOptions";
 
 export default function Aspect(options?: AspectOptions) {
     options = {...defaultOptions, ...options};
@@ -22,8 +22,6 @@ export default function Aspect(options?: AspectOptions) {
 function applyDecoratorToMethod(target: any, className: string, methodName: string, methodDescriptor: PropertyDescriptor, options: AspectOptions) {
     const originalMethod = methodDescriptor.value;
     if (!originalMethod) return;
-
-    const argNames = Utils.getParamNames(originalMethod);
     const metadata: AdviceMetadata = {
         className,
         methodName
@@ -32,13 +30,15 @@ function applyDecoratorToMethod(target: any, className: string, methodName: stri
         {
         ...methodDescriptor,
         value: function(...argsValues) {
-            metadata.args = getFunctionArguments(argNames, argsValues);
+            metadata.args = argsValues;
             options.onEntry?.(metadata);
 
-            handelReturnedValue(this, options, originalMethod, argsValues, metadata);
+            const returnValue = originalMethod.apply(this, argsValues)
 
-            if (metadata.returnValue?.then) {
-                handelPromiseReturnedValue(options, metadata);
+            if (returnValue?.then) {
+                handelPromiseReturnedValue(returnValue, options, metadata);
+            } else {
+                handelReturnedValue(returnValue, options, metadata);
             }
 
             return metadata.returnValue;
@@ -47,9 +47,9 @@ function applyDecoratorToMethod(target: any, className: string, methodName: stri
 }
 
 
-async function handelPromiseReturnedValue(options, metadata :AdviceMetadata) {
+async function handelPromiseReturnedValue(returnValue, options, metadata :AdviceMetadata) {
     try {
-        metadata.returnValue = await metadata.returnValue;
+        metadata.returnValue = await returnValue;
         !metadata.returnValue?.then && options.onSuccess?.(metadata);
     } catch (error) {
         metadata.error = error;
@@ -59,9 +59,9 @@ async function handelPromiseReturnedValue(options, metadata :AdviceMetadata) {
     }
 }
 
-function handelReturnedValue(scope, options: AspectOptions, originalMethod: Function, argsValues: any[], metadata :AdviceMetadata) {
+function handelReturnedValue(returnValue, options: AspectOptions, metadata :AdviceMetadata) {
     try{
-        metadata.returnValue = originalMethod.apply(scope, argsValues);
+        metadata.returnValue = returnValue;
         options.onSuccess?.(metadata);
     } catch (error) {
         metadata.error = error
@@ -85,24 +85,4 @@ function getMethodsDescriptors(target: any, options: AspectOptions): {propertyDe
             return !options.ignoredFunctions.includes(methodName) && typeof target[methodName] === 'function'
         })
         .map(methodName => ({propertyDescriptor: Object.getOwnPropertyDescriptor(target, methodName), methodName}));
-}
-
-// function methodsFilter(options: AspectOptions, methodName: string) {
-//     return !options?.ignoredFunctions?.includes(methodName);
-// }
-
-// function staticFunctionsSelector(propertyDescriptor: PropertyDescriptor) {
-//     return (
-//         propertyDescriptor.writable &&
-//         typeof propertyDescriptor.value === 'function' &&
-//         propertyDescriptor.value
-//     );
-// }
-
-function getFunctionArguments(argsNames: string[], values: any[]): FunctionArguments {
-    let args = {};
-    values.forEach((value, index) => {
-        args[argsNames[index]] = value;
-    });
-    return args;
 }
