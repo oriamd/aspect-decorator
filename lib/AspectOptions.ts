@@ -10,13 +10,9 @@ export interface AspectOptions {
 export interface AdviceMetadata {
     className?: string, 
     methodName?: string, 
-    args?: FunctionArguments, 
+    args?: string[], 
     returnValue?: any,
     error?: any
-}
-
-export interface FunctionArguments {
-    [argName: string]: any;
 }
 
 export type AdviceFunction = (params: AdviceMetadata) => void;

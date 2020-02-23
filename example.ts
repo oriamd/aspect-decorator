@@ -51,6 +51,7 @@ class TestLogWithDecorator {
     functionRunner(foo){
         const retu = foo();
         console.log('test function reference', retu);
+        return retu;
     }
 
 }
