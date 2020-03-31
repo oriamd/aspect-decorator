@@ -41,7 +41,7 @@ function applyDecoratorToMethod(target: any, className: string, methodName: stri
                 handelReturnedValue(returnValue, options, metadata);
             }
 
-            return metadata.returnValue;
+            return returnValue;
         }
     })
 }
@@ -50,12 +50,12 @@ function applyDecoratorToMethod(target: any, className: string, methodName: stri
 async function handelPromiseReturnedValue(returnValue, options, metadata :AdviceMetadata) {
     try {
         metadata.returnValue = await returnValue;
-        !metadata.returnValue?.then && options.onSuccess?.(metadata);
+        options.onSuccess?.(metadata);
     } catch (error) {
         metadata.error = error;
-        options?.onException?.(metadata);
+        options.onException?.(metadata);
     } finally {
-        !metadata.returnValue?.then && options?.onExit?.(metadata);
+        !metadata.returnValue?.then && options.onExit?.(metadata);
     }
 }
 
