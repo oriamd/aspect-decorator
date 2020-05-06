@@ -15,4 +15,4 @@ export interface AdviceMetadata {
     error?: any
 }
 
-export type AdviceFunction = (params: AdviceMetadata) => void;
+export type AdviceFunction = (params?: AdviceMetadata) => void;

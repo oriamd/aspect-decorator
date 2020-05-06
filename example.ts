@@ -1,5 +1,5 @@
-import AspectFactory from './lib/Aspect';
-import { AspectOptions } from './lib/AspectOptions';
+import AspectFactory from './lib/aspect';
+import { AspectOptions } from './lib/aspect-options';
 
 
 const options: AspectOptions = {
