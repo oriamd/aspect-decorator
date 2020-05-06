@@ -20,6 +20,10 @@
   },
   "homepage": "https://github.com/oriamd/aspect-ts#readme",
   "devDependencies": {
+    "@types/jest": "^25.2.1",
+    "babel-jest": "^26.0.1",
+    "jest": "^26.0.1",
+    "ts-jest": "^25.5.0",
     "typescript": "3.7.5"
   }
 }

@@ -1,11 +1,10 @@
 import Utils from "../utils";
-import { AspectOptions, AdviceMetadata } from "./AspectOptions";
+import { AspectOptions, AdviceMetadata } from "./aspect-options";
 
 export default function Aspect(options?: AspectOptions) {
     options = {...defaultOptions, ...options};
     function decorator(target) {
         try {
-            console.log(Object.getOwnPropertyNames(target));
             const staticMethodsDescriptors = getMethodsDescriptors(target, options);
             const methodsDescriptors = getMethodsDescriptors(target.prototype, options);
             const className = target.name;
@@ -32,24 +31,31 @@ function applyDecoratorToMethod(target: any, className: string, methodName: stri
         value: function(...argsValues) {
             metadata.args = argsValues;
             options.onEntry?.(metadata);
-
-            const returnValue = originalMethod.apply(this, argsValues)
-
-            if (returnValue?.then) {
-                handelPromiseReturnedValue(returnValue, options, metadata);
-            } else {
-                handelReturnedValue(returnValue, options, metadata);
+            let returnValue
+            try {
+                returnValue = originalMethod.apply(this, argsValues)
+                if(returnValue?.then){
+                    handelPromiseReturnedValue(returnValue, options, metadata);
+                }else {
+                    metadata.returnValue = returnValue;
+                    options.onSuccess?.(metadata);
+                }
+                return returnValue;
+            } catch (error) {
+                metadata.error = error;
+                options.onException?.(metadata);
+                throw error;
+            } finally{
+                !returnValue?.then && options.onExit?.(metadata);
             }
-
-            return returnValue;
         }
     })
 }
 
 
-async function handelPromiseReturnedValue(returnValue, options, metadata :AdviceMetadata) {
+async function handelPromiseReturnedValue(promiseValue, options, metadata :AdviceMetadata) {
     try {
-        metadata.returnValue = await returnValue;
+        metadata.returnValue = await promiseValue;
         options.onSuccess?.(metadata);
     } catch (error) {
         metadata.error = error;
@@ -58,20 +64,6 @@ async function handelPromiseReturnedValue(returnValue, options, metadata :Advice
         !metadata.returnValue?.then && options.onExit?.(metadata);
     }
 }
-
-function handelReturnedValue(returnValue, options: AspectOptions, metadata :AdviceMetadata) {
-    try{
-        metadata.returnValue = returnValue;
-        options.onSuccess?.(metadata);
-    } catch (error) {
-        metadata.error = error
-        options.onException?.(metadata);
-        throw error;
-    } finally {
-        options.onExit?.(metadata);
-    }
-}
-
 
 
 const defaultOptions: AspectOptions = {
