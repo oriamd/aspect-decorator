@@ -19,7 +19,7 @@ const options: AspectOptions = {
 
 const LogDecorator = AspectFactory(options);
 
-@LogDecorator
+// @LogDecorator
 class TestLogWithDecorator {
     testProperty: string = 'object instance value 123';
 
@@ -27,6 +27,7 @@ class TestLogWithDecorator {
         console.log('getter');
     }
 
+    @LogDecorator
     addFunction(num1: Number, num2) {
         return num1 + num2;
     }

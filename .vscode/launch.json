@@ -26,9 +26,10 @@
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ],
-            "smartStep": true,
+            // "smartStep": true,
             "outputCapture": "std",
             "console": "internalConsole",
+            "internalConsoleOptions": "neverOpen"
         },
 
         {
@@ -41,6 +42,7 @@
               "${workspaceRoot}/node_modules/.bin/jest",
               "--runInBand",
               "--config",
+              "--testMatch "
               "${workspaceRoot}/jest.config.js"
             ],
             "console": "integratedTerminal",
