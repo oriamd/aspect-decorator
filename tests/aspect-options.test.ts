@@ -1,4 +1,4 @@
-import Aspect from "../lib/aspect";
+import Aspect from "../src/Aspect";
 
 beforeEach(()=>{
     jest.clearAllMocks();

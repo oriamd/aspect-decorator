@@ -1,4 +1,3 @@
-import Utils from "../utils";
 import { AspectOptions, AdviceMetadata } from "./aspect-options";
 
 export default function Aspect(options?: AspectOptions): any {

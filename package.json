@@ -1,12 +1,13 @@
 {
   "name": "@oriamd/aspect-ts",
-  "version": "1.0.0",
+  "version": "1.0.0-beta",
   "description": "",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "prepublish": "tsc",
+  "main": "dist/index",
+  "types": "dist/index",
+  "prepublish": "npm run build ",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest test",
+    "build": "tsc -p ."
   },
   "repository": {
     "type": "git",

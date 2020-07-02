@@ -1,5 +1,5 @@
 import { mockClassOptions, mockMethodOptions } from "./aspect-options-mock";
-import Aspect from "../../lib/aspect";
+import Aspect from "../../src/Aspect";
 
 const mockDecorator = Aspect(mockMethodOptions);
 

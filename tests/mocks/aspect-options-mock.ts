@@ -1,4 +1,4 @@
-import { AspectOptions, AdviceFunction } from "../../lib/aspect-options";
+import { AspectOptions, AdviceFunction } from "../../src/aspect-options";
 
 export const mockClassOptions: AspectOptions = {
     onEntry: jest.fn(),
