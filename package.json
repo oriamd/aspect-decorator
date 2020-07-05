@@ -1,5 +1,5 @@
 {
-  "name": "@oriamd/aspect-decorator",
+  "name": "aspect-decorator",
   "version": "1.0.0-beta",
   "description": "decorator aspect oriented programming for typescript",
   "main": "./dist/aspect.js",
