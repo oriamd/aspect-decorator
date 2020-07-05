@@ -6,7 +6,7 @@
     "allowJs": true,
     "declaration": true,
     "sourceMap": true,
-    "noEmit": true,
+    "outDir": "dist",
     "esModuleInterop": true,
     "experimentalDecorators": true,
   },
