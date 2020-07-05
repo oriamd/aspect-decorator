@@ -10,7 +10,7 @@ export interface AspectOptions {
 export interface AdviceMetadata {
     className?: string, 
     methodName?: string, 
-    args?: string[], 
+    args?: any[], 
     returnValue?: any,
     error?: any
 }

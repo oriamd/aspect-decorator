@@ -13,7 +13,7 @@ export default function Aspect(options?: AspectOptions): any {
                 staticMethodsDescriptors.forEach(methodsDescriptor => applyDecoratorToMethod(target, className, methodsDescriptor.methodName, methodsDescriptor.propertyDescriptor, options));
                 methodsDescriptors.forEach(methodsDescriptor => applyDecoratorToMethod(target.prototype, className, methodsDescriptor.methodName, methodsDescriptor.propertyDescriptor, options));  
             } else { // If decorating method
-                const className = target.constructor.name;
+                const className = target.name || target.constructor.name;
                 applyDecoratorToMethod(target, className, propertyKey, descriptor, options, true)
             }
             
@@ -28,12 +28,12 @@ export default function Aspect(options?: AspectOptions): any {
 function applyDecoratorToMethod(target: any, className: string, methodName: string, methodDescriptor: PropertyDescriptor, options: AspectOptions, is_method_decorator: boolean = false) {
     const originalMethod = methodDescriptor.value;
     if (!originalMethod) return;
-    const metadata: AdviceMetadata = {
+    let metadata: AdviceMetadata = {
         className,
         methodName
     }
     const replacementMethod = (...argsValues) => {
-        metadata.args = argsValues;
+        metadata = {...metadata, args: argsValues};
         options.onEntry?.(metadata);
         let returnValue
         try {
@@ -41,12 +41,12 @@ function applyDecoratorToMethod(target: any, className: string, methodName: stri
             if(returnValue?.then){
                 handelPromiseReturnedValue(returnValue, options, metadata);
             }else {
-                metadata.returnValue = returnValue;
+                metadata = {...metadata, returnValue};
                 options.onSuccess?.(metadata);
             }
             return returnValue;
         } catch (error) {
-            metadata.error = error;
+            metadata = {...metadata, error};
             options.onException?.(metadata);
             throw error;
         } finally{
@@ -67,10 +67,11 @@ function applyDecoratorToMethod(target: any, className: string, methodName: stri
 
 async function handelPromiseReturnedValue(promiseValue, options, metadata :AdviceMetadata) {
     try {
-        metadata.returnValue = await promiseValue;
+        const returnValue = await promiseValue;
+        metadata = {...metadata, returnValue};
         options.onSuccess?.(metadata);
     } catch (error) {
-        metadata.error = error;
+        metadata = {...metadata, error};
         options.onException?.(metadata);
     } finally {
         !metadata.returnValue?.then && options.onExit?.(metadata);

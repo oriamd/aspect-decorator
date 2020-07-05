@@ -1,25 +1,45 @@
 import { ClassMock } from "./mocks/class-mock";
-
-const classMock = new ClassMock();
+import { AdviceMetadata } from "..";
+import { MethodsMock } from "./mocks/methods-mock";
 
 beforeEach(()=>{
     jest.clearAllMocks();
 })
+enum MocksNames {
+    Method = "MethodsMock",
+    Class = "ClassMock",
+}
+const mocks = {
+    [MocksNames.Method]: MethodsMock,
+    [MocksNames.Class]: ClassMock,
+};
 
-describe('Class Behavior', () => {
+describe.each(Object.values(MocksNames))(
+    "%s Behavior", (mockName: MocksNames) => {
+
+    const Mock = mocks[mockName];
+
+    const mock = new Mock();
+
+    let adviceMetadata: AdviceMetadata;
+    beforeEach(()=>{
+        adviceMetadata = {
+            className: mockName
+        }
+    })
 
     describe('Success Functions', () => {
         test('function should return correct value', () => {
-            expect(classMock.fn(1,2)).toEqual({a:1,b:2});
+            expect(mock.fn(1,2)).toEqual({a:1,b:2});
         })
         
         test('Async/Await Function should return the correct value', async () => {
-            const value = await classMock.fnAsync(1,2);
+            const value = await mock.fnAsync(1,2);
             expect(value).toEqual({a:1,b:2});
         })
 
         test('function should resolve correct value', (done) => {
-            classMock.fnAsync(1,2).then((value)=>{
+            mock.fnAsync(1,2).then((value)=>{
                 expect(value).toEqual({a:1,b:2});
                 done();
             })
@@ -33,7 +53,7 @@ describe('Class Behavior', () => {
     describe('Failure Functions', () => {
         test('function should throw correct error', () => {
             try {
-                classMock.errorFn(1,2);
+                mock.errorFn(1,2);
             } catch (error) {
                 expect(error).toEqual({a:1,b:2})
             }
@@ -41,14 +61,14 @@ describe('Class Behavior', () => {
         
         test('Async/Await function should throw correct error', async () => {
             try {
-                await classMock.errorFnAsync(1,2);
+                await mock.errorFnAsync(1,2);
             } catch (error) {
                 expect(error).toEqual({a:1,b:2})
             }
         })
 
         test('function should reject correct error', (done) => {
-            classMock.errorFnAsync(1,2).catch((error)=>{
+            mock.errorFnAsync(1,2).catch((error)=>{
                 expect(error).toEqual({a:1,b:2})
                 done();
             });
