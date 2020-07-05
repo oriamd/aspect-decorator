@@ -1,5 +1,5 @@
 import { ClassMock } from "./mocks/class-mock";
-import { AdviceMetadata } from "..";
+import { AdviceMetadata } from "../src/aspect-options";
 import { MethodsMock } from "./mocks/methods-mock";
 
 beforeEach(()=>{
