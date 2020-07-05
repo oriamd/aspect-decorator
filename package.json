@@ -1,9 +1,9 @@
 {
-  "name": "@oriamd/aspect-ts",
+  "name": "@oriamd/aspect-decorator",
   "version": "1.0.0-beta",
-  "description": "",
-  "main": "dist/index",
-  "types": "dist/index",
+  "description": "decorator aspect oriented programming for typescript",
+  "main": "./dist/aspect.js",
+	"types": "./dist/aspect.d.ts",
   "prepublish": "npm run build ",
   "scripts": {
     "test": "jest test",
@@ -11,15 +11,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/oriamd/aspect-ts"
+    "url": "https://github.com/oriamd/aspect-decorator"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "ori amuday",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/oriamd/aspect-ts/issues"
+    "url": "https://github.com/oriamd/aspect-decorator/issues"
   },
-  "homepage": "https://github.com/oriamd/aspect-ts#readme",
+  "homepage": "https://github.com/oriamd/aspect-decorator#readme",
   "devDependencies": {
     "@types/jest": "^25.2.1",
     "babel-jest": "^26.0.1",
