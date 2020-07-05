@@ -2,8 +2,8 @@
   "name": "aspect-decorator",
   "version": "1.0.0-beta",
   "description": "decorator aspect oriented programming for typescript",
-  "main": "./dist/aspect.js",
-	"types": "./dist/aspect.d.ts",
+  "main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
   "prepublish": "npm run build ",
   "scripts": {
     "test": "jest test",

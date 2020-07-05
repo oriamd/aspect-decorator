@@ -87,7 +87,7 @@ const defaultOptions: AspectOptions = {
 function getMethodsDescriptors(target: any, options: AspectOptions): {propertyDescriptor: PropertyDescriptor, methodName: string}[]{
     return Object.getOwnPropertyNames(target)
         .filter(methodName => {
-            return !options.ignoredFunctions.includes(methodName) && typeof target[methodName] === 'function'
+            return options.ignoredFunctions.indexOf(methodName) < 0 && typeof target[methodName] === 'function'
         })
         .map(methodName => ({propertyDescriptor: Object.getOwnPropertyDescriptor(target, methodName), methodName}));
 }
