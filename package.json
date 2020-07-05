@@ -1,6 +1,6 @@
 {
   "name": "aspect-decorator",
-  "version": "1.0.0-beta",
+  "version": "1.0.1-beta",
   "description": "decorator aspect oriented programming for typescript",
   "main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
